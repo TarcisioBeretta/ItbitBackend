@@ -28,14 +28,15 @@ namespace Itbit.WebAPI.Inbound.Controllers
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<IEnumerable<UsuarioViewModel>> Get()
+        public ActionResult<IEnumerable<UsuarioViewModel>> Get(string? nome, bool? ativo)
         {
-            if (!_usuarioService.Exist())
+            var usuarios = _usuarioService.Get(nome, ativo);
+            if (usuarios == null)
             {
                 return NotFound();
             }
 
-            return Ok(_mapper.Map<IEnumerable<UsuarioViewModel>>(_usuarioService.Get()));
+            return Ok(_mapper.Map<IEnumerable<UsuarioViewModel>>(usuarios));
         }
 
         [HttpGet("{id}")]
@@ -86,6 +87,20 @@ namespace Itbit.WebAPI.Inbound.Controllers
             var usuarioInput = _mapper.Map<Usuario>(usuarioInputModel);
             var usuarioOutput = _usuarioService.Update(id, usuarioInput);
             return Ok(_mapper.Map<UsuarioViewModel>(usuarioOutput));
+        }
+
+        [HttpPut("{id}/status/{status}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public ActionResult<UsuarioViewModel> UpdateStatus(int id, bool status)
+        {
+            if (!_usuarioService.Exist(id))
+            {
+                return NotFound();
+            }
+
+            var usuario = _usuarioService.UpdateStatus(id, status);
+            return Ok(_mapper.Map<UsuarioViewModel>(usuario));
         }
 
         [HttpDelete("{id}")]

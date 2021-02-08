@@ -15,9 +15,21 @@ namespace Itbit.WebAPI.Domain.Services
             _context = context;
         }
 
-        public IEnumerable<Usuario> Get()
+        public IEnumerable<Usuario> Get(string nome, bool? ativo)
         {
-            return _context.Usuarios.Include(o => o.Sexo).AsEnumerable();
+            var usuarios = _context.Usuarios.Include(o => o.Sexo).AsEnumerable();
+
+            if (nome != null)
+            {
+                usuarios = usuarios.Where(o => o.Nome.ToUpper().Contains(nome.ToUpper()));
+            }
+
+            if (ativo != null)
+            {
+                usuarios = usuarios.Where(o => o.Ativo == ativo);
+            }
+
+            return usuarios.AsEnumerable();
         }
 
         public Usuario GetById(int id)
@@ -41,6 +53,16 @@ namespace Itbit.WebAPI.Domain.Services
             usuario.Senha = usuarioEditado.Senha;
             usuario.Ativo = usuarioEditado.Ativo;
             usuario.SexoId = usuarioEditado.SexoId;
+
+            _context.Usuarios.Update(usuario);
+            _context.SaveChanges();
+            return GetById(usuario.Id);
+        }
+
+        public Usuario UpdateStatus(int id, bool status)
+        {
+            var usuario = GetById(id);
+            usuario.Ativo = status;
 
             _context.Usuarios.Update(usuario);
             _context.SaveChanges();
